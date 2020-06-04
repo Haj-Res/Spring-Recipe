@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@EqualsAndHashCode(exclude = {"ingredients", "categories"})
 @Entity
 public class Recipe {
 
