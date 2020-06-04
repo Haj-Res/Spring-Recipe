@@ -9,58 +9,65 @@ import com.hajres.recipeapp.domain.UnitOfMeasure;
 import com.hajres.recipeapp.repositories.CategoryRepository;
 import com.hajres.recipeapp.repositories.RecipeRepository;
 import com.hajres.recipeapp.repositories.UnitOfMeasureRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
+@RequiredArgsConstructor
 @Component
 public class RecipeBootstrap implements ApplicationListener<ContextRefreshedEvent> {
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        recipeRepository.saveAll(getRecipes());
-    }
-
     private final CategoryRepository categoryRepository;
     private final RecipeRepository recipeRepository;
     private final UnitOfMeasureRepository unitOfMeasureRepository;
 
-    public RecipeBootstrap(CategoryRepository categoryRepository,
-                           RecipeRepository recipeRepository,
-                           UnitOfMeasureRepository unitOfMeasureRepository) {
-        this.categoryRepository = categoryRepository;
-        this.recipeRepository = recipeRepository;
-        this.unitOfMeasureRepository = unitOfMeasureRepository;
+    @Override
+    @Transactional
+    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        log.info("Starting data bootstrap");
+        recipeRepository.saveAll(getRecipes());
+        log.info("Data bootstrap complete");
     }
 
     private List<Recipe> getRecipes() {
         List<Recipe> recipes = new ArrayList<>(2);
+        log.debug("Loading measurement units from database");
         Optional<UnitOfMeasure> eachUomOptional = unitOfMeasureRepository.findByDescription("Each");
         if (eachUomOptional.isEmpty()) {
+            log.error("Unit of Measure 'Each' is missing from database");
             throw new RuntimeException("Expected UOM Not Found");
         }
         Optional<UnitOfMeasure> tablespoonUomOptional = unitOfMeasureRepository.findByDescription("Tablespoon");
         if (tablespoonUomOptional.isEmpty()) {
+            log.error("Unit of Measure 'Tablespoon' is missing from database");
             throw new RuntimeException("Expected UOM Not Found");
         }
         Optional<UnitOfMeasure> teaspoonUomOptional = unitOfMeasureRepository.findByDescription("Teaspoon");
         if (teaspoonUomOptional.isEmpty()) {
+            log.error("Unit of Measure 'Teaspoon' is missing from database");
             throw new RuntimeException("Expected UOM Not Found");
         }
         Optional<UnitOfMeasure> dashUomOptional = unitOfMeasureRepository.findByDescription("Dash");
         if (dashUomOptional.isEmpty()) {
+            log.error("Unit of Measure 'Dash' is missing from database");
             throw new RuntimeException("Expected UOM Not Found");
         }
         Optional<UnitOfMeasure> pintUomOptional = unitOfMeasureRepository.findByDescription("Pint");
         if (pintUomOptional.isEmpty()) {
+            log.error("Unit of Measure 'Pint' is missing from database");
             throw new RuntimeException("Expected UOM Not Found");
         }
         Optional<UnitOfMeasure> cupUomOptional = unitOfMeasureRepository.findByDescription("Cup");
         if (cupUomOptional.isEmpty()) {
+            log.error("Unit of Measure 'Cup' is missing from database");
             throw new RuntimeException("Expected UOM Not Found");
         }
 
@@ -72,6 +79,7 @@ public class RecipeBootstrap implements ApplicationListener<ContextRefreshedEven
         UnitOfMeasure pintUom = pintUomOptional.get();
         UnitOfMeasure cupUom = cupUomOptional.get();
 
+        log.debug("Loading categories from database");
         Optional<Category> americanCategoryOptional = categoryRepository.findByDescription("American");
         if (americanCategoryOptional.isEmpty()) {
             throw new RuntimeException("Expected UOM Not Found");
@@ -83,6 +91,7 @@ public class RecipeBootstrap implements ApplicationListener<ContextRefreshedEven
         Category americanCategory = americanCategoryOptional.get();
         Category mexicanCategory = mexicanCategoryOptional.get();
 
+        log.debug("Creating 'Perfect Guacamole' recipe");
         Recipe guacRecipe = new Recipe();
         guacRecipe.setDescription("Perfect Guacamole");
         guacRecipe.setPrepTime(10);
@@ -138,6 +147,7 @@ public class RecipeBootstrap implements ApplicationListener<ContextRefreshedEven
         guacRecipe.getCategories().add(mexicanCategory);
         recipes.add(guacRecipe);
 
+        log.debug("Creating 'Spice Grilled Chicken Taco' recipe");
         Recipe tacoRecipe = new Recipe();
         tacoRecipe.setDescription("Spice Grilled Chicken Taco");
         tacoRecipe.setCookTime(9);
